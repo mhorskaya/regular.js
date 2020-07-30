@@ -1,0 +1,36 @@
+{
+  "name": "regular-js",
+  "version": "1.0.0",
+  "description": "angular.js from scratch",
+  "author": "Mustafa Hakan Örskaya",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhorskaya/regular.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mhorskaya/regular.js/issues"
+  },
+  "homepage": "https://github.com/mhorskaya/regular.js#readme",
+  "devDependencies": {
+    "browserify": "^16.5.1",
+    "jasmine-core": "^3.6.0",
+    "jshint": "^2.11.1",
+    "karma": "^5.1.1",
+    "karma-browserify": "^7.0.0",
+    "karma-jasmine": "^3.3.1",
+    "karma-jshint-preprocessor": "0.0.6",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "phantomjs-prebuilt": "^2.1.16",
+    "sinon": "^9.0.2",
+    "watchify": "^3.11.1"
+  },
+  "dependencies": {
+    "jquery": "^3.5.1",
+    "lodash": "^4.17.19"
+  },
+  "scripts": {
+    "lint": "jshint src test",
+    "test": "karma start"
+  }
+}
