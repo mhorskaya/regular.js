@@ -49,8 +49,12 @@ Scope.prototype.$digest = function () {
 
     do {
         while (this.$$asyncQueue.length) {
-            var asyncTask = this.$$asyncQueue.shift();
-            asyncTask.scope.$eval(asyncTask.expression);
+            try {
+                var asyncTask = this.$$asyncQueue.shift();
+                asyncTask.scope.$eval(asyncTask.expression);
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         dirty = this.$$digestOnce();
@@ -64,7 +68,11 @@ Scope.prototype.$digest = function () {
     this.$clearPhase();
 
     while (this.$$postDigestQueue.length) {
-        this.$$postDigestQueue.shift()();
+        try {
+            this.$$postDigestQueue.shift()();
+        } catch (e) {
+            console.error(e);
+        }
     }
 };
 
@@ -149,7 +157,11 @@ Scope.prototype.$clearPhase = function () {
 
 Scope.prototype.$$flushApplyAsync = function () {
     while (this.$$applyAsyncQueue.length) {
-        this.$$applyAsyncQueue.shift()();
+        try {
+            this.$$applyAsyncQueue.shift()();
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     this.$$applyAsyncId = null;
@@ -161,7 +173,7 @@ Scope.prototype.$applyAsync = function (expr) {
     self.$$applyAsyncQueue.push(function () {
         self.$eval(expr);
     });
-    
+
     if (self.$$applyAsyncId === null) {
         self.$$applyAsyncId = setTimeout(function () {
             self.$apply(_.bind(self.$$flushApplyAsync, self));
