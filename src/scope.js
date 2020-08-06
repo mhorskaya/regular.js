@@ -200,7 +200,7 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
                 listenerFn(newValues, newValues, self);
             }
         });
-        
+
         return function () {
             shouldCall = false;
         };
@@ -232,6 +232,13 @@ Scope.prototype.$watchGroup = function (watchFns, listenerFn) {
             destroyFunction();
         });
     };
+};
+
+Scope.prototype.$new = function () {
+    var ChildScope = function () { };
+    ChildScope.prototype = this;
+    var child = new ChildScope();
+    return child;
 };
 
 module.exports = Scope;
