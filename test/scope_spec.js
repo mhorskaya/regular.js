@@ -389,6 +389,22 @@ describe('Scope', function () {
             });
             expect(scope.counter).toBe(2);
         });
+
+        it('digests from root on $apply', function () {
+            var parent = new Scope();
+            var child = parent.$new();
+            var child2 = child.$new();
+            parent.aValue = 'abc';
+            parent.counter = 0;
+            parent.$watch(
+                function (scope) { return scope.aValue; },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            child2.$apply(function (scope) { });
+            expect(parent.counter).toBe(1);
+        });
     });
 
     describe('$evalAsync', function () {
@@ -496,6 +512,25 @@ describe('Scope', function () {
             });
             setTimeout(function () {
                 expect(scope.counter).toBe(1);
+                done();
+            }, 50);
+        });
+
+        it('schedules a digest from root on $evalAsync', function (done) {
+            var parent = new Scope();
+            var child = parent.$new();
+            var child2 = child.$new();
+            parent.aValue = 'abc';
+            parent.counter = 0;
+            parent.$watch(
+                function (scope) { return scope.aValue; },
+                function (newValue, oldValue, scope) {
+                    scope.counter++;
+                }
+            );
+            child2.$evalAsync(function (scope) { });
+            setTimeout(function () {
+                expect(parent.counter).toBe(1);
                 done();
             }, 50);
         });
