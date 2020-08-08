@@ -312,7 +312,10 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
                     }
                 });
             } else {
-
+                if (!_.isObject(oldValue) || isArrayLike(oldValue)) {
+                    changeCount++;
+                    oldValue = {};
+                }
             }
         } else {
             if (!self.$$areEqual(newValue, oldValue, false)) {
