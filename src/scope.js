@@ -45,7 +45,7 @@ Scope.prototype.$digest = function () {
     this.$beginPhase('$digest');
 
     if (this.$root.$$applyAsyncId) {
-        clearTimeout(this.$root.$$applyAsyncId);;
+        clearTimeout(this.$root.$$applyAsyncId);
         this.$$flushApplyAsync();
     }
 
@@ -173,7 +173,7 @@ Scope.prototype.$$flushApplyAsync = function () {
         }
     }
 
-    this.$root.$$applyAsyncId = null;;
+    this.$root.$$applyAsyncId = null;
 };
 
 Scope.prototype.$applyAsync = function (expr) {
@@ -283,6 +283,30 @@ Scope.prototype.$$everyScope = function (fn) {
     } else {
         return false;
     }
+};
+
+Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
+    var self = this;
+    var newValue;
+    var oldValue;
+    var changeCount = 0;
+
+    var internalWatchFn = function (scope) {
+        newValue = watchFn(scope);
+
+        if (!self.$$areEqual(newValue, oldValue, false)) {
+            changeCount++;
+        }
+
+        oldValue = newValue;
+        return changeCount;
+    };
+
+    var internalListenerFn = function () {
+        listenerFn(newValue, oldValue, self);
+    };
+
+    return this.$watch(internalWatchFn, internalListenerFn);
 };
 
 module.exports = Scope;
