@@ -11,6 +11,7 @@ function Scope() {
     this.$$postDigestQueue = [];
     this.$root = this;
     this.$$children = [];
+    this.$$listeners = {};
     this.$$phase = null;
 }
 
@@ -259,6 +260,7 @@ Scope.prototype.$new = function (isolated, parent) {
     }
     parent.$$children.push(child);
     child.$$watchers = [];
+    child.$$listeners = {};
     child.$$children = [];
     child.$parent = parent;
     return child;
@@ -364,7 +366,7 @@ Scope.prototype.$watchCollection = function (watchFn, listenerFn) {
         } else {
             listenerFn(newValue, veryOldValue, self);
         }
-        
+
         if (trackVeryOldValue) {
             veryOldValue = _.clone(newValue);
         }
@@ -381,5 +383,13 @@ function isArrayLike(obj) {
     return length === 0 ||
         (_.isNumber(length) && length > 0 && (length - 1) in obj);
 }
+
+Scope.prototype.$on = function (eventName, listener) {
+    var listeners = this.$$listeners[eventName];
+    if (!listeners) {
+        this.$$listeners[eventName] = listeners = [];
+    }
+    listeners.push(listener);
+};
 
 module.exports = Scope;

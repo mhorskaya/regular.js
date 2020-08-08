@@ -1416,4 +1416,45 @@ describe('Scope', function () {
             expect(oldValueGiven).toEqual({ a: 1, b: 2 });
         });
     });
+
+    describe('Events', function () {
+        var parent;
+        var scope;
+        var child;
+        var isolatedChild;
+
+        beforeEach(function () {
+            parent = new Scope();
+            scope = parent.$new();
+            child = scope.$new();
+            isolatedChild = scope.$new(true);
+        });
+
+        it('allows registering listeners', function () {
+            var listener1 = function () { };
+            var listener2 = function () { };
+            var listener3 = function () { };
+
+            scope.$on('someEvent', listener1);
+            scope.$on('someEvent', listener2);
+            scope.$on('someOtherEvent', listener3);
+
+            expect(scope.$$listeners).toEqual({
+                someEvent: [listener1, listener2],
+                someOtherEvent: [listener3]
+            });
+        });
+
+        it('registers different listeners for every scope', function () {
+            var listener1 = function () { };
+            var listener2 = function () { };
+            var listener3 = function () { };
+            scope.$on('someEvent', listener1);
+            child.$on('someEvent', listener2);
+            isolatedChild.$on('someEvent', listener3);
+            expect(scope.$$listeners).toEqual({ someEvent: [listener1] });
+            expect(child.$$listeners).toEqual({ someEvent: [listener2] });
+            expect(isolatedChild.$$listeners).toEqual({ someEvent: [listener3] });
+        });
+    });
 });
