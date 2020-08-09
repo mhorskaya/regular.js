@@ -1457,24 +1457,35 @@ describe('Scope', function () {
             expect(isolatedChild.$$listeners).toEqual({ someEvent: [listener3] });
         });
 
-        it('calls the listeners of the matching event on $emit', function () {
-            var listener1 = jasmine.createSpy();
-            var listener2 = jasmine.createSpy();
-            scope.$on('someEvent', listener1);
-            scope.$on('someOtherEvent', listener2);
-            scope.$emit('someEvent');
-            expect(listener1).toHaveBeenCalled();
-            expect(listener2).not.toHaveBeenCalled();
-        });
-        
-        it('calls the listeners of the matching event on $broadcast', function () {
-            var listener1 = jasmine.createSpy();
-            var listener2 = jasmine.createSpy();
-            scope.$on('someEvent', listener1);
-            scope.$on('someOtherEvent', listener2);
-            scope.$broadcast('someEvent');
-            expect(listener1).toHaveBeenCalled();
-            expect(listener2).not.toHaveBeenCalled();
+        _.forEach(['$emit', '$broadcast'], function (method) {
+            it('calls listeners registered for matching events on ' + method, function () {
+                var listener1 = jasmine.createSpy();
+                var listener2 = jasmine.createSpy();
+                scope.$on('someEvent', listener1);
+                scope.$on('someOtherEvent', listener2);
+                scope[method]('someEvent');
+                expect(listener1).toHaveBeenCalled();
+                expect(listener2).not.toHaveBeenCalled();
+            });
+
+            it('passes an event object with a name to listeners on ' + method, function () {
+                var listener = jasmine.createSpy();
+                scope.$on('someEvent', listener);
+                scope[method]('someEvent');
+                expect(listener).toHaveBeenCalled();
+                expect(listener.calls.mostRecent().args[0].name).toEqual('someEvent');
+            });
+
+            it('passes the same event object to each listener on ' + method, function () {
+                var listener1 = jasmine.createSpy();
+                var listener2 = jasmine.createSpy();
+                scope.$on('someEvent', listener1);
+                scope.$on('someEvent', listener2);
+                scope[method]('someEvent');
+                var event1 = listener1.calls.mostRecent().args[0];
+                var event2 = listener2.calls.mostRecent().args[0];
+                expect(event1).toBe(event2);
+            });
         });
     });
 });
