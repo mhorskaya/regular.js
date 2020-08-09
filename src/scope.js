@@ -394,12 +394,12 @@ Scope.prototype.$on = function (eventName, listener) {
 
 Scope.prototype.$emit = function (eventName) {
     var additionalArgs = _.tail(arguments);
-    this.$$fireEventOnScope(eventName, additionalArgs);
+    return this.$$fireEventOnScope(eventName, additionalArgs);
 };
 
 Scope.prototype.$broadcast = function (eventName) {
     var additionalArgs = _.tail(arguments);
-    this.$$fireEventOnScope(eventName, additionalArgs);
+    return this.$$fireEventOnScope(eventName, additionalArgs);
 };
 
 Scope.prototype.$$fireEventOnScope = function (eventName, additionalArgs) {
@@ -409,6 +409,7 @@ Scope.prototype.$$fireEventOnScope = function (eventName, additionalArgs) {
     _.forEach(listeners, function (listener) {
         listener.apply(null, listenerArgs);
     });
+    return event;
 };
 
 module.exports = Scope;
