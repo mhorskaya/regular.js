@@ -127,7 +127,10 @@ Lexer.prototype.readIdent = function () {
         }
         this.index++;
     }
-    var token = { text: text };
+    var token = {
+        text: text,
+        identifier: true
+    };
     this.tokens.push(token);
 };
 
@@ -166,6 +169,8 @@ AST.Program = 'Program';
 AST.Literal = 'Literal';
 AST.ArrayExpression = 'ArrayExpression';
 AST.ObjectExpression = 'ObjectExpression';
+AST.Property = 'Property';
+AST.Identifier = 'Identifier';
 
 AST.prototype.ast = function (text) {
     this.tokens = this.lexer.lex(text);
@@ -190,6 +195,10 @@ AST.prototype.primary = function () {
 
 AST.prototype.constant = function () {
     return { type: AST.Literal, value: this.consume().value };
+};
+
+AST.prototype.identifier = function () {
+    return { type: AST.Identifier, name: this.consume().text };
 };
 
 AST.prototype.constants = {
@@ -237,8 +246,22 @@ AST.prototype.arrayDeclaration = function () {
 };
 
 AST.prototype.object = function () {
+    var properties = [];
+    if (!this.peek('}')) {
+        do {
+            var property = { type: AST.Property };
+            if (this.peek().identifier) {
+                property.key = this.identifier();
+            } else {
+                property.key = this.constant();
+            }
+            this.consume(':');
+            property.value = this.primary();
+            properties.push(property);
+        } while (this.expect(','));
+    }
     this.consume('}');
-    return { type: AST.ObjectExpression };
+    return { type: AST.ObjectExpression, properties: properties };
 };
 
 function ASTCompiler(astBuilder) {
@@ -267,7 +290,14 @@ ASTCompiler.prototype.recurse = function (ast) {
             }, this));
             return '[' + elements.join(',') + ']';
         case AST.ObjectExpression:
-            return '{}';
+            var properties = _.map(ast.properties, _.bind(function (property) {
+                var key = property.key.type === AST.Identifier ?
+                    property.key.name :
+                    this.escape(property.key.value);
+                var value = this.recurse(property.value);
+                return key + ':' + value;
+            }, this));
+            return '{' + properties.join(',') + '}';
     }
 };
 
