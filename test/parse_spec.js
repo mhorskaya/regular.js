@@ -86,7 +86,7 @@ describe('parse', function () {
         var fn = parse('null');
         expect(fn()).toBe(null);
     });
-    
+
     it('will parse true', function () {
         var fn = parse('true');
         expect(fn()).toBe(true);
@@ -95,5 +95,10 @@ describe('parse', function () {
     it('will parse false', function () {
         var fn = parse('false');
         expect(fn()).toBe(false);
+    });
+
+    it('ignores whitespace', function () {
+        var fn = parse(' \n42 ');
+        expect(fn()).toEqual(42);
     });
 });
