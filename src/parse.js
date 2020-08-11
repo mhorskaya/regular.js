@@ -25,6 +25,11 @@ Lexer.prototype.lex = function (text) {
             this.readNumber();
         } else if (this.ch === '\'' || this.ch === '"') {
             this.readString(this.ch);
+        } else if (this.ch === '[' || this.ch === ']') {
+            this.tokens.push({
+                text: this.ch
+            });
+            this.index++;
         } else if (this.isIdent(this.ch)) {
             this.readIdent();
         } else if (this.isWhitespace(this.ch)) {
@@ -155,6 +160,7 @@ function AST(lexer) {
 }
 AST.Program = 'Program';
 AST.Literal = 'Literal';
+AST.ArrayExpression = 'ArrayExpression';
 
 AST.prototype.ast = function (text) {
     this.tokens = this.lexer.lex(text);
@@ -166,7 +172,9 @@ AST.prototype.program = function () {
 };
 
 AST.prototype.primary = function () {
-    if (this.constants.hasOwnProperty(this.tokens[0].text)) {
+    if (this.expect('[')) {
+        return this.arrayDeclaration();
+    } else if (this.constants.hasOwnProperty(this.tokens[0].text)) {
         return this.constants[this.tokens[0].text];
     } else {
         return this.constant();
@@ -181,6 +189,27 @@ AST.prototype.constants = {
     'null': { type: AST.Literal, value: null },
     'true': { type: AST.Literal, value: true },
     'false': { type: AST.Literal, value: false }
+};
+
+AST.prototype.expect = function (e) {
+    if (this.tokens.length > 0) {
+        if (this.tokens[0].text === e || !e) {
+            return this.tokens.shift();
+        }
+    }
+};
+
+AST.prototype.consume = function (e) {
+    var token = this.expect(e);
+    if (!token) {
+        throw 'Unexpected. Expecting: ' + e;
+    }
+    return token;
+};
+
+AST.prototype.arrayDeclaration = function () {
+    this.consume(']');
+    return { type: AST.ArrayExpression };
 };
 
 function ASTCompiler(astBuilder) {
@@ -203,6 +232,8 @@ ASTCompiler.prototype.recurse = function (ast) {
             break;
         case AST.Literal:
             return this.escape(ast.value);
+        case AST.ArrayExpression:
+            return '[]';
     }
 };
 
