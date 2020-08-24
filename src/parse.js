@@ -10,7 +10,10 @@ var ESCAPES = {
 var OPERATORS = {
     '+': true,
     '!': true,
-    '-': true
+    '-': true,
+    '*': true,
+    '/': true,
+    '%': true
 };
 
 function parse(expr) {
@@ -192,6 +195,7 @@ AST.MemberExpression = 'MemberExpression';
 AST.CallExpression = 'CallExpression';
 AST.AssignmentExpression = 'AssignmentExpression';
 AST.UnaryExpression = 'UnaryExpression';
+AST.BinaryExpression = 'BinaryExpression';
 
 AST.prototype.ast = function (text) {
     this.tokens = this.lexer.lex(text);
@@ -329,9 +333,9 @@ AST.prototype.parseArguments = function () {
 };
 
 AST.prototype.assignment = function () {
-    var left = this.unary();
+    var left = this.multiplicative();
     if (this.expect('=')) {
-        var right = this.unary();
+        var right = this.multiplicative();
         return { type: AST.AssignmentExpression, left: left, right: right };
     }
     return left;
@@ -348,6 +352,20 @@ AST.prototype.unary = function () {
     } else {
         return this.primary();
     }
+};
+
+AST.prototype.multiplicative = function () {
+    var left = this.unary();
+    var token;
+    while ((token = this.expect('*', '/', '%'))) {
+        left = {
+            type: AST.BinaryExpression,
+            left: left,
+            operator: token.text,
+            right: this.unary()
+        };
+    }
+    return left;
 };
 
 function ASTCompiler(astBuilder) {
@@ -495,6 +513,10 @@ ASTCompiler.prototype.recurse = function (ast, context, create) {
         case AST.UnaryExpression:
             return ast.operator +
                 '(' + this.ifDefined(this.recurse(ast.argument), 0) + ')';
+        case AST.BinaryExpression:
+            return '(' + this.recurse(ast.left) + ')' +
+                ast.operator +
+                '(' + this.recurse(ast.right) + ')';
     }
 };
 
