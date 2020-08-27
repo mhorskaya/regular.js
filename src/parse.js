@@ -30,9 +30,16 @@ var OPERATORS = {
 };
 
 function parse(expr) {
-    var lexer = new Lexer();
-    var parser = new Parser(lexer);
-    return parser.parse(expr);
+    switch (typeof expr) {
+        case 'string':
+            var lexer = new Lexer();
+            var parser = new Parser(lexer);
+            return parser.parse(expr);
+        case 'function':
+            return expr;
+        default:
+            return _.noop;
+    }
 }
 
 function Lexer() {
