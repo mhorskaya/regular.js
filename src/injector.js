@@ -13,10 +13,12 @@ function createInjector(modulesToLoad) {
             cache[key] = value;
         }
     };
-    function invoke(fn, self) {
+    function invoke(fn, self, locals) {
         var args = _.map(fn.$inject, function (token) {
             if (_.isString(token)) {
-                return cache[token];
+                return locals && locals.hasOwnProperty(token) ?
+                    locals[token] :
+                    cache[token];
             } else {
                 throw 'Incorrect injection token! Expected a string, got ' + token;
             }
