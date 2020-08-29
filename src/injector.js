@@ -13,6 +13,13 @@ function createInjector(modulesToLoad) {
             cache[key] = value;
         }
     };
+    function annotate(fn) {
+        if (_.isArray(fn)) {
+            return fn.slice(0, fn.length - 1);
+        } else {
+            return fn.$inject;
+        }
+    }
     function invoke(fn, self, locals) {
         var args = _.map(fn.$inject, function (token) {
             if (_.isString(token)) {
@@ -44,6 +51,7 @@ function createInjector(modulesToLoad) {
         get: function (key) {
             return cache[key];
         },
+        annotate: annotate,
         invoke: invoke
     };
 }
