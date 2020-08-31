@@ -9,14 +9,16 @@ var INSTANTIATING = {};
 
 function createInjector(modulesToLoad, strictDi) {
     var providerCache = {};
-    var providerInjector = createInternalInjector(providerCache, function () {
-        throw 'Unknown provider: ' + path.join(' <- ');
-    });
+    var providerInjector = providerCache.$injector =
+        createInternalInjector(providerCache, function () {
+            throw 'Unknown provider: ' + path.join(' <- ');
+        });
     var instanceCache = {};
-    var instanceInjector = createInternalInjector(instanceCache, function (name) {
-        var provider = providerInjector.get(name + 'Provider');
-        return instanceInjector.invoke(provider.$get, provider);
-    });
+    var instanceInjector = instanceCache.$injector =
+        createInternalInjector(instanceCache, function (name) {
+            var provider = providerInjector.get(name + 'Provider');
+            return instanceInjector.invoke(provider.$get, provider);
+        });
     var loadedModules = {};
     var path = [];
     strictDi = (strictDi === true);
