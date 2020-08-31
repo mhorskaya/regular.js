@@ -116,6 +116,7 @@ function createInjector(modulesToLoad, strictDi) {
             service[method].apply(service, args);
         });
     }
+    var runBlocks = [];
     _.forEach(modulesToLoad, function loadModule(moduleName) {
         if (!loadedModules.hasOwnProperty(moduleName)) {
             loadedModules[moduleName] = true;
@@ -123,7 +124,11 @@ function createInjector(modulesToLoad, strictDi) {
             _.forEach(module.requires, loadModule);
             runInvokeQueue(module._invokeQueue);
             runInvokeQueue(module._configBlocks);
+            runBlocks = runBlocks.concat(module._runBlocks);
         }
+    });
+    _.forEach(runBlocks, function (runBlock) {
+        instanceInjector.invoke(runBlock);
     });
     return instanceInjector;
 }
