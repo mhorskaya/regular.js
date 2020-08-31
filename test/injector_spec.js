@@ -542,7 +542,7 @@ describe('injector', function () {
             createInjector(['myModule']);
             expect(gotA).toBe(42);
         });
-        
+
         it('configures all modules before running any run blocks', function () {
             var module1 = window.angular.module('myModule', []);
             module1.provider('a', { $get: _.constant(1) });
@@ -554,6 +554,47 @@ describe('injector', function () {
             module2.provider('b', { $get: _.constant(2) });
             createInjector(['myModule', 'myOtherModule']);
             expect(result).toBe(3);
+        });
+
+        it('runs a function module dependency as a config block', function () {
+            var functionModule = function ($provide) {
+                $provide.constant('a', 42);
+            };
+            window.angular.module('myModule', [functionModule]);
+            var injector = createInjector(['myModule']);
+            expect(injector.get('a')).toBe(42);
+        });
+
+        it('runs a function module with array injection as a config block', function () {
+            var functionModule = ['$provide', function ($provide) {
+                $provide.constant('a', 42);
+            }];
+            window.angular.module('myModule', [functionModule]);
+            var injector = createInjector(['myModule']);
+            expect(injector.get('a')).toBe(42);
+        });
+
+        it('supports returning a run block from a function module', function () {
+            var result;
+            var functionModule = function ($provide) {
+                $provide.constant('a', 42);
+                return function (a) {
+                    result = a;
+                };
+            };
+            window.angular.module('myModule', [functionModule]);
+            createInjector(['myModule']);
+            expect(result).toBe(42);
+        });
+
+        it('only loads function modules once', function () {
+            var loadedTimes = 0;
+            var functionModule = function () {
+                loadedTimes++;
+            };
+            window.angular.module('myModule', [functionModule, functionModule]);
+            createInjector(['myModule']);
+            expect(loadedTimes).toBe(1);
         });
     });
 });
