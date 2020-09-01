@@ -53,6 +53,11 @@ function createInjector(modulesToLoad, strictDi) {
         },
         value: function (key, value) {
             this.factory(key, _.constant(value), false);
+        },
+        service: function (key, Constructor) {
+            this.factory(key, function () {
+                return instanceInjector.instantiate(Constructor);
+            });
         }
     };
     function annotate(fn) {
